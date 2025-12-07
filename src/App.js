@@ -89,12 +89,78 @@ export default function App() {
 }
 
 
+// /* -------------------------------
+//    SERVICE WORKER FOR PWA (GitHub Pages Safe)
+// --------------------------------*/
+// if ("serviceWorker" in navigator) {
+//   navigator.serviceWorker
+//     .register("./service-worker.js")
+//     .then(() => console.log("Service Worker registered"))
+//     .catch((err) => console.log("SW registration failed:", err));
+// }
+
+
 /* -------------------------------
-   SERVICE WORKER FOR PWA (GitHub Pages Safe)
+  Service Worker Registration (Keep this at the top)
 --------------------------------*/
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
     .register("./service-worker.js")
-    .then(() => console.log("Service Worker registered"))
+    .then(() => {
+        console.log("Service Worker registered");
+        // Start the notification flow after successful SW registration
+        initializeNotificationFlow(); 
+    })
     .catch((err) => console.log("SW registration failed:", err));
+}
+
+/* -----------------------------------------------------------------
+  NOTIFICATION & BADGE SIMULATION LOGIC
+----------------------------------------------------------------- */
+
+function initializeNotificationFlow() {
+    // 1. Request Notification Permission
+    Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+            console.log('✅ Notification permission granted. Scheduling simulation...');
+            // If granted, schedule the delayed functions
+            scheduleDelayedNotificationAndBadge();
+        } else {
+            console.log('⚠️ Notification permission denied. Cannot show banner/alert.');
+        }
+    });
+}
+
+
+function scheduleDelayedNotificationAndBadge() {
+    const BADGE_COUNT = 3; 
+    const ONE_MINUTE_MS = 60 * 1000; // 1 minute delay
+
+    console.log(`Scheduling notification and badge in ${ONE_MINUTE_MS / 1000} seconds...`);
+
+    // Set the timer to execute the function after 1 minute
+    setTimeout(() => {
+        // --- 1. SHOW THE MOBILE NOTIFICATION BANNER/ALERT ---
+        if (Notification.permission === 'granted') {
+            try {
+                new Notification('📣 New Messages Alert', {
+                    body: `You have ${BADGE_COUNT} unread notifications. Tap to view.`,
+                    icon: process.env.PUBLIC_URL + "/icons/icon-192.jpeg",
+                    vibrate: [200, 100, 200, 100, 200], // Optional: Vibrate pattern on mobile
+                    tag: 'simulated-notification' // Optional: Prevents duplicate notifications with the same tag
+                });
+                console.log('🎉 Mobile notification banner/alert displayed.');
+            } catch (e) {
+                console.error('Error displaying notification:', e);
+            }
+        }
+        
+        // --- 2. SET THE APP ICON BADGE COUNT ---
+        if ('setAppBadge' in navigator) {
+            navigator.setAppBadge(BADGE_COUNT)
+                .then(() => console.log(`App icon badge successfully set to ${BADGE_COUNT}.`))
+                .catch(error => console.error('❌ Failed to set app badge:', error));
+        }
+
+    }, ONE_MINUTE_MS);
 }
