@@ -18,11 +18,9 @@ function ProtectedRoute({ children }) {
 }
 
 export default function App() {
-  const [location, setLocation] = useState(null);
-
   return (
     <AppProvider>
-      <LocationFetcher setLocation={setLocation} />
+      <LocationFetcher />
       <MainRoutes />
       <FloatingCart />
     </AppProvider>
@@ -76,9 +74,13 @@ function MainRoutes() {
     </Routes>
   );
 }
+
+/* -------------------------------
+   SERVICE WORKER FOR PWA (GitHub Pages Safe)
+--------------------------------*/
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
-    .register("/service-worker.js")
+    .register("./service-worker.js") 
     .then(() => console.log("Service Worker registered"))
     .catch((err) => console.log("SW registration failed:", err));
 }
